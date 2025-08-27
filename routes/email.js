@@ -90,7 +90,7 @@ router.get("/emails", async (req, res) => {
     }
 
     if (messageIds.length === 0) {
-      return res.status(200).json([]);
+      return res.status(200).send("✅ No new emails.");
     }
 
     const results = [];
@@ -129,31 +129,19 @@ router.get("/emails", async (req, res) => {
         status: "Applied",
         gmailMessageId: id,
       });
-
-      // (Optional)
-      //   results.push({
-      //     id,
-      //     company: company || "Unknown Company",
-      //     subject,
-      //     date,
-      //     referral: "No",
-      //     body: snippet,
-      //     status: "Applied",
-      //   });
-      // }
-
-      // 4. Update last_history_id in DB
-      await pool.query(
-        `UPDATE users SET last_history_id = $1 WHERE email = $2`,
-        [maxHistoryId.toString(), email]
-      );
-
-      res.status(200).json({ message: "Success" });
     }
+    // Update last_history_id in DB
+    // After the loop finishes:
+    await pool.query(`UPDATE users SET last_history_id = $1 WHERE email = $2`, [
+      maxHistoryId.toString(),
+      email,
+    ]);
   } catch (err) {
     console.error("❌ Failed to fetch emails:", err);
     res.status(500).send("Something went wrong");
   }
+
+  return res.status(200).send("✅ Emails processed.");
 });
 
 module.exports = router;
