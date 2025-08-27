@@ -209,7 +209,7 @@ router.get("/emails", async (req, res) => {
         continue;
       }
 
-      // Run Gemini to extract company
+      // Run Gemini to extract company Name
       let company = "Unknown Company";
       try {
         const { company: extractedCompany } = await extractCompany(
