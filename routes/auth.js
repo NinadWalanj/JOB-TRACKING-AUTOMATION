@@ -49,7 +49,7 @@ router.get("/oauth2callback", async (req, res) => {
     oauth2Client.on("tokens", async (tokens) => {
       if (tokens.access_token) {
         await pool.query(
-          `UPDATE users SET access_token = $1, expiry_date = $2, updated_at = NOW() WHERE email = $3`,
+          `UPDATE users SET access_token = $1, expiry_date = $2, created_at = NOW() WHERE email = $3`,
           [tokens.access_token, tokens.expiry_date || null, email]
         );
       }
