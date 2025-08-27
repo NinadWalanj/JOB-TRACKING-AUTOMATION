@@ -1,0 +1,23 @@
+{
+  "name": "job-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@notionhq/client": "^4.0.2",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "googleapis": "^157.0.0",
+    "nodemon": "^3.1.10",
+    "pg": "^8.16.3"
+  }
+}
