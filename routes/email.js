@@ -42,7 +42,7 @@ router.get("/emails", async (req, res) => {
       const latest = await gmail.users.messages.list({
         userId: "me",
         labelIds: ["INBOX"],
-        q: "-from:me",
+        q: `-from:me ("thank you for applying" OR "thanks for applying" OR "application received" OR "application was sent" OR "received your application" OR "application was submitted")`,
         maxResults: 1,
       });
 
@@ -108,7 +108,17 @@ router.get("/emails", async (req, res) => {
       const from = getHeader(full.data.payload, "From");
 
       // Run Gemini to extract company
-      const { company } = await extractCompany(snippet, subject, from);
+      let company = "Unknown Company";
+      try {
+        const { company: extractedCompany } = await extractCompany(
+          snippet,
+          subject,
+          from
+        );
+        if (extractedCompany) company = extractedCompany;
+      } catch (err) {
+        console.error("❌ Gemini failed, using default company:", err.message);
+      }
 
       await addToNotion({
         company: company || "Unknown Company",
@@ -120,25 +130,26 @@ router.get("/emails", async (req, res) => {
         gmailMessageId: id,
       });
 
-      // (Optional) Push to Notion here in future
-      results.push({
-        id,
-        company: company || "Unknown Company",
-        subject,
-        date,
-        referral: "No",
-        body: snippet,
-        status: "Applied",
-      });
+      // (Optional)
+      //   results.push({
+      //     id,
+      //     company: company || "Unknown Company",
+      //     subject,
+      //     date,
+      //     referral: "No",
+      //     body: snippet,
+      //     status: "Applied",
+      //   });
+      // }
+
+      // 4. Update last_history_id in DB
+      await pool.query(
+        `UPDATE users SET last_history_id = $1 WHERE email = $2`,
+        [maxHistoryId.toString(), email]
+      );
+
+      res.status(200).json({ message: "Success" });
     }
-
-    // 4. Update last_history_id in DB
-    await pool.query(`UPDATE users SET last_history_id = $1 WHERE email = $2`, [
-      maxHistoryId.toString(),
-      email,
-    ]);
-
-    res.json(results);
   } catch (err) {
     console.error("❌ Failed to fetch emails:", err);
     res.status(500).send("Something went wrong");
