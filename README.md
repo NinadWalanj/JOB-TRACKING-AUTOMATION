@@ -1,4 +1,4 @@
-# 📬 Job Application Tracker (Gmail → Notion + AI)
+# Job Application Tracker (Gmail → Notion + AI)
 
 A personal project that automates tracking of your job applications:
 
@@ -9,7 +9,7 @@ A personal project that automates tracking of your job applications:
 
 ---
 
-## 🚀 Features
+## Features
 
 * **Supabase PostgreSQL** → secure storage for Google OAuth tokens.
 * **Gmail API + History API checkpointing** → ensures only *new emails* are processed.
@@ -21,7 +21,7 @@ A personal project that automates tracking of your job applications:
 
 ---
 
-## 🛠️ Setup Instructions
+## Setup Instructions
 
 ### 1. Database (Supabase PostgreSQL)
 
@@ -56,13 +56,13 @@ create table if not exists users (
 2. Create a project → Enable **Gmail API**.
 3. Create OAuth2 credentials (Web App).
 
-   * Redirect URI: `http://localhost:3000/auth/callback`
+   * Redirect URI: `http://localhost:5000/auth/callback`
 4. Save your credentials in `.env`:
 
    ```bash
    GOOGLE_CLIENT_ID=your-client-id
    GOOGLE_CLIENT_SECRET=your-client-secret
-   GOOGLE_REDIRECT_URI=http://localhost:3000/auth/callback
+   GOOGLE_REDIRECT_URI=http://localhost:5000/auth/callback
    ```
 
 Scopes required:
@@ -180,25 +180,27 @@ Database schema:
 4. Regex → confirms it’s an application confirmation.
 5. Gemini → extracts “Amazon”.
 6. Entry is written to Notion DB:
+
+   ```
    Company: Amazon
    Subject: Thank you for applying
    Date: 2025-08-28
    Referral: No
    Status: Applied
    Gmail Message ID: 198ec6638a69b9ed
-   
-
+   ```
 7. `last_history_id` updated.
 
 ---
 
 ## Running Locally
 
-
+```bash
 git clone https://github.com/yourusername/job-tracker.git
 cd job-tracker
 npm install
 npm run dev
+```
 
 ---
 
@@ -212,5 +214,3 @@ npm run dev
   * Background workers & cron resilience
   * Regex + LLM hybrid classification
   * API integration across 4 platforms (Google, Supabase, Gemini, Notion)
-
----
