@@ -196,7 +196,7 @@ Database schema:
 ## Running Locally
 
 ```bash
-git clone https://github.com/yourusername/job-tracker.git
+git clone https://github.com/NinadWalanj/JOB-TRACKING-AUTOMATION.git
 cd job-tracker
 npm install
 npm run dev
