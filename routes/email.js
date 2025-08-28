@@ -64,7 +64,7 @@ let isProcessing = false;
 
 async function processEmailsForUser(email) {
   if (isProcessing) {
-    console.log("⏭️ Skip: a previous run is still in progress.");
+    console.log("⏭Skip: a previous run is still in progress.");
     return;
   }
   isProcessing = true;
@@ -113,7 +113,7 @@ async function processEmailsForUser(email) {
         `UPDATE users SET last_history_id = $1 WHERE email = $2`,
         [initialHistoryId, email]
       );
-      console.log("✅ History tracking initialized at", initialHistoryId);
+      console.log("History tracking initialized at", initialHistoryId);
       return; // bootstrap done; next cron will process from here
     }
 
@@ -140,7 +140,7 @@ async function processEmailsForUser(email) {
     }
 
     if (messageIds.length === 0) {
-      console.log("✅ No new messages.");
+      console.log("No new messages.");
       return;
     }
 
@@ -170,7 +170,7 @@ async function processEmailsForUser(email) {
         );
         if (extractedCompany) company = extractedCompany;
       } catch (err) {
-        console.error("❌ Gemini failed, using default company:", err.message);
+        console.error("Gemini failed, using default company:", err.message);
       }
 
       try {
@@ -185,7 +185,7 @@ async function processEmailsForUser(email) {
         });
         processed++;
       } catch (e) {
-        console.error("❌ Notion insert failed:", e?.message || e);
+        console.error("Notion insert failed:", e?.message || e);
       }
     }
 
@@ -195,10 +195,10 @@ async function processEmailsForUser(email) {
       email,
     ]);
     console.log(
-      `✅ Done. Processed ${processed} confirmation email(s). checkpoint=${maxHistoryId}`
+      `Done. Processed ${processed} confirmation email(s). checkpoint=${maxHistoryId}`
     );
   } catch (err) {
-    console.error("❌ Background processing failed:", err);
+    console.error("Background processing failed:", err);
   } finally {
     isProcessing = false;
   }
@@ -209,11 +209,11 @@ router.get("/emails", async (req, res) => {
   const email = req.query.email;
   if (!email) return res.status(400).send("Missing email");
 
-  res.status(202).send("✅ Emails processed.");
+  res.status(202).send("Emails processed.");
 
   setImmediate(() => {
     processEmailsForUser(email).catch((err) =>
-      console.error("❌ Unhandled in processEmailsForUser:", err)
+      console.error("Unhandled in processEmailsForUser:", err)
     );
   });
 });

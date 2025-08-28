@@ -55,7 +55,7 @@ router.get("/oauth2callback", async (req, res) => {
       }
     });
 
-    res.send(`✅ Gmail access granted for ${email}`);
+    res.send(`Gmail access granted for ${email}`);
   } catch (err) {
     console.error("OAuth callback error:", err);
     res.status(500).send("Authentication failed.");

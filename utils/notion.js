@@ -26,7 +26,7 @@ async function addToNotion({
     });
 
     if (existing.results.length > 0) {
-      console.log(`📭 Skipping duplicate: ${gmailMessageId}`);
+      console.log(`Skipping duplicate: ${gmailMessageId}`);
       return;
     }
 
@@ -62,9 +62,9 @@ async function addToNotion({
       },
     });
 
-    console.log(`✅ Added to Notion: ${company}`);
+    console.log(`Added to Notion: ${company}`);
   } catch (err) {
-    console.error("❌ Notion insert failed:", err.message);
+    console.error("Notion insert failed:", err.message);
   }
 }
 

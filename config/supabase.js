@@ -1,5 +1,3 @@
-// Database password: 1hBaN0SykFZRpNWT
-
 const { Pool } = require("pg");
 require("dotenv").config();
 
