@@ -29,7 +29,7 @@ function isApplicationConfirmation(subject = "", body = "") {
 
   const hay = normalize(`${subject}\n${body}`);
 
-  // Positive phrases (your six + a common variant)
+  // Positive phrases (six phrases + a common variant)
   const POS = [
     /\bthank\s*you\s*for\s*apply(?:ing)?\b/i,
     /\bthanks?\s*for\s*apply(?:ing)?\b/i,
@@ -64,7 +64,7 @@ let isProcessing = false;
 
 async function processEmailsForUser(email) {
   if (isProcessing) {
-    console.log("⏭Skip: a previous run is still in progress.");
+    console.log("Skip: a previous run is still in progress.");
     return;
   }
   isProcessing = true;
@@ -117,27 +117,42 @@ async function processEmailsForUser(email) {
       return; // bootstrap done; next cron will process from here
     }
 
-    // 3) Get new messages since checkpoint
-    const historyRes = await gmail.users.history.list({
-      userId: "me",
-      startHistoryId: user.last_history_id,
-      labelId: "INBOX",
-      historyTypes: ["messageAdded"],
-    });
-
-    const history = historyRes.data.history || [];
+    // 3) Get new messages since checkpoint (PAGINATED)
+    let pageToken = undefined;
     const messageIds = [];
     let maxHistoryId = BigInt(user.last_history_id);
+    let pages = 0;
 
-    for (const record of history) {
-      if (record.historyId) {
-        const hId = BigInt(record.historyId);
-        if (hId > maxHistoryId) maxHistoryId = hId;
+    do {
+      const resp = await gmail.users.history.list({
+        userId: "me",
+        startHistoryId: user.last_history_id,
+        labelId: "INBOX",
+        historyTypes: ["messageAdded"],
+        pageToken,
+      });
+
+      const history = resp.data.history || [];
+      pages++;
+
+      for (const record of history) {
+        // track largest historyId seen
+        if (record.historyId) {
+          const hId = BigInt(record.historyId);
+          if (hId > maxHistoryId) maxHistoryId = hId;
+        }
+        // collect new message IDs
+        for (const entry of record.messagesAdded || []) {
+          if (entry.message?.id) messageIds.push(entry.message.id);
+        }
       }
-      for (const entry of record.messagesAdded || []) {
-        if (entry.message?.id) messageIds.push(entry.message.id);
-      }
-    }
+
+      pageToken = resp.data.nextPageToken || undefined;
+    } while (pageToken);
+
+    console.log(
+      `history scan: start=${user.last_history_id} pages=${pages} ids=${messageIds.length} newCheckpoint=${maxHistoryId}`
+    );
 
     if (messageIds.length === 0) {
       console.log("No new messages.");
