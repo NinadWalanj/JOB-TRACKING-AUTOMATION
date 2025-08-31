@@ -117,42 +117,29 @@ async function processEmailsForUser(email) {
       return; // bootstrap done; next cron will process from here
     }
 
-    // 3) Get new messages since checkpoint (PAGINATED)
-    let pageToken = undefined;
+    // 3) Get new messages since checkpoint
+    const historyRes = await gmail.users.history.list({
+      userId: "me",
+      startHistoryId: user.last_history_id,
+      labelId: "INBOX",
+      historyTypes: ["messageAdded"],
+    });
+
+    const history = historyRes.data.history || [];
+    console.log("history", history);
     const messageIds = [];
     let maxHistoryId = BigInt(user.last_history_id);
-    let pages = 0;
 
-    do {
-      const resp = await gmail.users.history.list({
-        userId: "me",
-        startHistoryId: user.last_history_id,
-        labelId: "INBOX",
-        historyTypes: ["messageAdded"],
-        pageToken,
-      });
-
-      const history = resp.data.history || [];
-      pages++;
-
-      for (const record of history) {
-        // track largest historyId seen
-        if (record.historyId) {
-          const hId = BigInt(record.historyId);
-          if (hId > maxHistoryId) maxHistoryId = hId;
-        }
-        // collect new message IDs
-        for (const entry of record.messagesAdded || []) {
-          if (entry.message?.id) messageIds.push(entry.message.id);
-        }
+    for (const record of history) {
+      if (record.id) {
+        const hId = BigInt(record.id);
+        if (hId > maxHistoryId) maxHistoryId = hId;
       }
-
-      pageToken = resp.data.nextPageToken || undefined;
-    } while (pageToken);
-
-    console.log(
-      `history scan: start=${user.last_history_id} pages=${pages} ids=${messageIds.length} newCheckpoint=${maxHistoryId}`
-    );
+      for (const entry of record.messagesAdded || []) {
+        if (entry.message?.id) messageIds.push(entry.message.id);
+      }
+    }
+    console.log("after looking through all new records", maxHistoryId);
 
     if (messageIds.length === 0) {
       console.log("No new messages.");
